@@ -9,7 +9,7 @@ A dead cell will come to life only if the sum equals 3.
 
 */
 import {
-  map, compose, sum,
+  map, compose, sum, print,
 } from './util.js'
 
 const getIndexIterator = (len) => (index) => (
@@ -55,4 +55,30 @@ function getNextValue(board) {
   ))
 }
 
-export { getNextValue }
+const repeatToConvergenceOrMax = (n) => (f) => (x) => {
+  let m = 0
+  while (true) {
+    if (m === n) { return x }
+    m += 1
+    const newX = f(m)(x)
+    if (JSON.stringify(newX) === JSON.stringify(x)) { return x }
+    x = newX
+  }
+}
+
+const displayBoard = (i) => (board) => {
+  print(`======${i}======`)
+  board.forEach((r) => {
+    print(r.map((c) => (c ? 'X' : 'O')).join(' '))
+  })
+  return board
+}
+
+const step = (i) => compose(
+  getNextValue,
+  displayBoard(i),
+)
+
+export {
+  getNextValue, step,
+}
