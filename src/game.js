@@ -80,5 +80,5 @@ const step = (i) => compose(
 )
 
 export {
-  getNextValue, step,
+  getNextValue, step, repeatToConvergenceOrMax,
 }
