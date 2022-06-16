@@ -1,7 +1,22 @@
 import { jest } from '@jest/globals'
+import { getNextValue } from './game'
 
 describe('game', () => {
-  it('game should have state and board', () => {
-    expect(1).toBe(1)
+  it('shoud become alive with 3 neighbours', () => {
+    const board = [[true, true], [true, false]]
+    const nextValue = getNextValue(board)
+    expect(nextValue).toEqual([[true, true], [true, true]])
+  })
+
+  it('shoud die with less than 2 and more than 3 neighbours', () => {
+    const board = [
+      [true, true, true],
+      [true, false, false],
+      [true, true, true]]
+    const nextValue = getNextValue(board)
+    expect(nextValue).toEqual([
+      [true, true, false],
+      [false, false, false],
+      [true, true, false]])
   })
 })
