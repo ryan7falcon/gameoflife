@@ -8,37 +8,50 @@ If the sum is less than 2, the cell will die due to isolation.
 A dead cell will come to life only if the sum equals 3.
 
 */
+import {
+  pipe, trace, map, compose, reduce, sum,
+} from './util.js'
 
-const getNeighbourIndexIterator = (index, len) => (
+const getIndexIterator = (len) => (index) => (
   [index - 1, index, index + 1].filter((v) => (v >= 0 && v < len))
 )
 
-const sum = (acc, cur) => (acc + cur)
+const getNeighbouringRowsIndexes = (board) => getIndexIterator(board.length)
 
-const isAliveNeighbour = (board, row, column, i, j) => ((i !== row || j !== column) && board[i][j])
+const getNeighbouringColumnsIndexes = (board) => getIndexIterator(board[0].length)
 
-const countAliveNeighbours = (board, row, column) => {
-  const rows = getNeighbourIndexIterator(row, board.length)
-  const columns = getNeighbourIndexIterator(column, board[0].length)
+const isNeighbour = (row, column, i, j) => ((i !== row || j !== column))
 
-  return rows.map((i) => columns.map(
-    (j) => isAliveNeighbour(board, row, column, i, j),
-  ).reduce(sum)).reduce(sum)
+const isAliveNeighbour = (board, cellRowIndex, cellColumnIndex, i, j) => (
+  isNeighbour(cellRowIndex, cellColumnIndex, i, j) && board[i][j]
+)
+
+const countAliveNeighboursInRow = (board, cellRowIndex, cellColumnIndex) => (i) => compose(
+  sum,
+  map((j) => isAliveNeighbour(board, cellRowIndex, cellColumnIndex, i, j)),
+  getNeighbouringColumnsIndexes(board),
+)(cellColumnIndex)
+
+const countAliveNeighbours = (board, cellRowIndex, cellColumnIndex) => compose(
+  sum,
+  map(countAliveNeighboursInRow(board, cellRowIndex, cellColumnIndex)),
+  getNeighbouringRowsIndexes(board),
+)(cellRowIndex)
+
+const shouldLive = (isAlive, count) => {
+  if (count === 2) {
+    return isAlive
+  }
+  if (count === 3) {
+    return true
+  }
+  return false
 }
 
 function getNextValue(board) {
   return board.map((row, rowIndex) => (
-    row.map((isAlive, columnIndex) => {
-      const count = countAliveNeighbours(board, rowIndex, columnIndex)
-
-      if (count > 3 || count < 2) {
-        return false
-      }
-      if (count === 3) {
-        return true
-      }
-      return isAlive
-    })
+    row.map((isAlive, columnIndex) => (
+      shouldLive(isAlive, countAliveNeighbours(board, rowIndex, columnIndex))))
   ))
 }
 
