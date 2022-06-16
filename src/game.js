@@ -9,7 +9,7 @@ A dead cell will come to life only if the sum equals 3.
 
 */
 import {
-  pipe, trace, map, compose, reduce, sum,
+  map, compose, sum,
 } from './util.js'
 
 const getIndexIterator = (len) => (index) => (
