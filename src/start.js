@@ -1,7 +1,8 @@
 /*
 A “live” cell (value 1) remains alive only if this sum equals 2 or 3.
 
-If the sum is greater than 3, the cell will “die” (become 0) at the next iteration due to overcrowding.
+If the sum is greater than 3, the cell will “die” (become 0)
+at the next iteration due to overcrowding.
 
 If the sum is less than 2, the cell will die due to isolation.
 
