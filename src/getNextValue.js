@@ -1,16 +1,4 @@
-/*
-A “live” cell (value 1) remains alive only if this sum equals 2 or 3.
-
-If the sum is greater than 3, the cell will “die” (become 0) at the next iteration due to overcrowding.
-
-If the sum is less than 2, the cell will die due to isolation.
-
-A dead cell will come to life only if the sum equals 3.
-
-*/
-import {
-  map, compose, sum, print,
-} from './util.js'
+import { map, compose, sum } from './util.js'
 
 const getIndexIterator = (len) => (index) => (
   [index - 1, index, index + 1].filter((v) => (v >= 0 && v < len))
@@ -55,30 +43,4 @@ function getNextValue(board) {
   ))
 }
 
-const repeatToConvergenceOrMax = (n) => (f) => (x) => {
-  let m = 0
-  while (true) {
-    if (m === n) { return x }
-    m += 1
-    const newX = f(m)(x)
-    if (JSON.stringify(newX) === JSON.stringify(x)) { return x }
-    x = newX
-  }
-}
-
-const displayBoard = (i) => (board) => {
-  print(`======${i}======`)
-  board.forEach((r) => {
-    print(r.map((c) => (c ? 'X' : 'O')).join(' '))
-  })
-  return board
-}
-
-const step = (i) => compose(
-  getNextValue,
-  displayBoard(i),
-)
-
-export {
-  getNextValue, step, repeatToConvergenceOrMax,
-}
+export default getNextValue

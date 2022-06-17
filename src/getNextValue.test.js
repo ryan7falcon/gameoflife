@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals'
-import { getNextValue } from './game'
+import getNextValue from './getNextValue.js'
 
 describe('game', () => {
   it('shoud become alive with 3 neighbours', () => {
