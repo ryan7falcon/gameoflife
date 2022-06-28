@@ -1,46 +1,49 @@
-import { map, compose, sum } from './util.js'
+import {
+  map, compose, sum, trace, filter, count, flat, flatMap, reduce,
+} from './util.js'
 
-const getIndexIterator = (len) => (index) => (
+const getIndexIterator = (len, index) => (
   [index - 1, index, index + 1].filter((v) => (v >= 0 && v < len))
 )
+const rowsAround = (board, cell) => getIndexIterator(board.length, cell.r)
+const columnsAround = (board, cell) => getIndexIterator(board[0].length, cell.c)
 
-const getNeighbouringRowsIndexes = (board) => getIndexIterator(board.length)
+const checkNotEqual = (a, b) => ((a.r !== b.r || a.c !== b.c))
+const checkAlive = (board, a) => board[a.r][a.c]
 
-const getNeighbouringColumnsIndexes = (board) => getIndexIterator(board[0].length)
-
-const isNeighbour = (row, column, i, j) => ((i !== row || j !== column))
-
-const isAliveNeighbour = (board, cellRowIndex, cellColumnIndex, i, j) => (
-  isNeighbour(cellRowIndex, cellColumnIndex, i, j) && board[i][j]
+const getAliveNeighboursRow = (board, cell) => (r) => reduce(
+  (acc, c) => {
+    const neighbour = { r, c }
+    return checkNotEqual(cell, neighbour) && checkAlive(board, neighbour)
+      ? [...acc, neighbour]
+      : acc
+  },
+  [],
+  columnsAround(board, cell),
 )
 
-const countAliveNeighboursInRow = (board, cellRowIndex, cellColumnIndex) => (i) => compose(
-  sum,
-  map((j) => isAliveNeighbour(board, cellRowIndex, cellColumnIndex, i, j)),
-  getNeighbouringColumnsIndexes(board),
-)(cellColumnIndex)
+const getAliveNeighbours = ({ board, cell }) => flatMap(
+  getAliveNeighboursRow(board, cell),
+  rowsAround(board, cell),
+)
 
-const countAliveNeighbours = (board, cellRowIndex, cellColumnIndex) => compose(
-  sum,
-  map(countAliveNeighboursInRow(board, cellRowIndex, cellColumnIndex)),
-  getNeighbouringRowsIndexes(board),
-)(cellRowIndex)
-
-const shouldLive = (isAlive, count) => {
-  if (count === 2) {
-    return isAlive
-  }
-  if (count === 3) {
-    return true
-  }
+const cellShouldLive = (isAlive, aliveNeighboursCount) => {
+  if (aliveNeighboursCount === 2) { return isAlive }
+  if (aliveNeighboursCount === 3) { return true }
   return false
 }
 
-function getNextValue(board) {
-  return board.map((row, rowIndex) => (
-    row.map((isAlive, columnIndex) => (
-      shouldLive(isAlive, countAliveNeighbours(board, rowIndex, columnIndex))))
-  ))
-}
+const getNextCellValue = (board, rowIndex) => (isAlive, columnIndex) => cellShouldLive(
+  isAlive,
+  compose(count, getAliveNeighbours)({
+    board, cell: { r: rowIndex, c: columnIndex },
+  }),
+)
 
+const getNextRowValue = (board) => (row, rowIndex) => map(
+  getNextCellValue(board, rowIndex),
+  row,
+)
+
+const getNextValue = (board) => map(getNextRowValue(board), board)
 export default getNextValue
