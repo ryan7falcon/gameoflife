@@ -18,29 +18,31 @@ const checkAliveNeighbour = ({ board, cell }) => converge(
   [compose(not, equals(cell)), checkAlive(board)],
 )
 
-const getAliveNeighboursRow = ({ board, cell }) => (r) => reduce(
+const getAliveNeighboursRow = (bc) => (r) => reduce(
   (acc, c) => {
     const neighbour = { r, c }
     return ifElse(
-      () => checkAliveNeighbour({ board, cell })(neighbour),
+      () => checkAliveNeighbour(bc)(neighbour),
       append(neighbour),
       identity,
     )(acc)
   },
   [],
-  columnsAround({ board, cell }),
+  columnsAround(bc),
 )
 
 const getAliveNeighbours = converge(chain, [getAliveNeighboursRow, rowsAround])
 
-const cellShouldLive = (isAlive) => cond([
+const cellShouldLive = (isAlive, count) => cond([
   [equals(2), always(isAlive)],
   [equals(3), T],
   [T, F],
-])
+])(count)
 
-const getNextCellValue = (board) => (r) => (isAlive, c) => cellShouldLive(isAlive)(
-  compose(length, getAliveNeighbours)({ board, cell: { r, c } }),
+const makeBC = curry((board, r, c) => ({ board, cell: { r, c } }))
+const getNextCellValue = (board) => (r) => useWith(
+  cellShouldLive,
+  [identity, compose(length, getAliveNeighbours, makeBC(board, r))],
 )
 
 const getNextRowValue = (board) => useWith(
