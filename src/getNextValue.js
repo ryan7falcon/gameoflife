@@ -1,19 +1,25 @@
 import {
-  compose, reduce, length, chain, map, addIndex, range,
-  filter, and, gt, lte, equals, converge, identity, curry, not, append,
-  ifElse,
+  compose, reduce, length, chain, map, addIndex, range, filter, and, gt, lte, equals,
+  converge, identity, curry, not, append, ifElse, T, F, always,
 } from 'ramda'
 
 const mapIndexed = addIndex(map);
 
 const getIndexIterator = (len, index) => (
-  filter(converge(and, [lte(0), gt(len)]), range(index - 1, index + 2)))
+  filter(
+    converge(and, [lte(0), gt(len)]),
+    range(index - 1, index + 2),
+  )
+)
 
 const rowsAround = ({ board, cell }) => getIndexIterator(length(board), cell.r)
 const columnsAround = ({ board, cell }) => getIndexIterator(length(board[0]), cell.c)
 
 const checkAlive = curry((board, a) => board[a.r][a.c])
-const checkAliveNeighbour = ({ board, cell }) => converge(and, [compose(not, equals(cell)), checkAlive(board)])
+const checkAliveNeighbour = ({ board, cell }) => converge(
+  and,
+  [compose(not, equals(cell)), checkAlive(board)],
+)
 
 const getAliveNeighboursRow = ({ board, cell }) => (r) => reduce(
   (acc, c) => {
@@ -34,9 +40,12 @@ const getAliveNeighbours = converge(
 )
 
 const cellShouldLive = (isAlive, aliveNeighboursCount) => {
-  if (aliveNeighboursCount === 2) { return isAlive }
-  if (aliveNeighboursCount === 3) { return true }
-  return false
+  const n = {
+    2: always(isAlive),
+    3: T,
+  }
+
+  return (n[aliveNeighboursCount] || F)()
 }
 
 const getNextCellValue = (board, rowIndex) => (isAlive, columnIndex) => cellShouldLive(
