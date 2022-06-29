@@ -1,6 +1,7 @@
 import {
   compose, reduce, length, chain, map, addIndex, range, filter, and, gt, lte, equals,
-  converge, identity, curry, not, append, ifElse, T, F, always, cond, add, useWith, flip, prop, head, path,
+  converge, identity, curry, not, append, ifElse, T, F, always, cond, add, useWith,
+  flip, prop, head, path,
 } from 'ramda'
 
 const mapIndexed = addIndex(map);
