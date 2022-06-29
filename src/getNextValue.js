@@ -1,35 +1,36 @@
 import {
-  compose, reduce, length, chain, map, addIndex,
+  compose, reduce, length, chain, map, addIndex, range,
+  filter, and, gt, lte, equals, converge, identity, curry, not, append,
+  ifElse,
 } from 'ramda'
-import {
-  map as myMap,
-} from './util.js'
 
 const mapIndexed = addIndex(map);
 
 const getIndexIterator = (len, index) => (
-  [index - 1, index, index + 1].filter((v) => (v >= 0 && v < len))
-)
-const rowsAround = (board, cell) => getIndexIterator(length(board), cell.r)
-const columnsAround = (board, cell) => getIndexIterator(length(board[0]), cell.c)
+  filter(converge(and, [lte(0), gt(len)]), range(index - 1, index + 2)))
 
-const checkNotEqual = (a, b) => ((a.r !== b.r || a.c !== b.c))
-const checkAlive = (board, a) => board[a.r][a.c]
+const rowsAround = ({ board, cell }) => getIndexIterator(length(board), cell.r)
+const columnsAround = ({ board, cell }) => getIndexIterator(length(board[0]), cell.c)
 
-const getAliveNeighboursRow = (board, cell) => (r) => reduce(
+const checkAlive = curry((board, a) => board[a.r][a.c])
+const checkAliveNeighbour = ({ board, cell }) => converge(and, [compose(not, equals(cell)), checkAlive(board)])
+
+const getAliveNeighboursRow = ({ board, cell }) => (r) => reduce(
   (acc, c) => {
     const neighbour = { r, c }
-    return checkNotEqual(cell, neighbour) && checkAlive(board, neighbour)
-      ? [...acc, neighbour]
-      : acc
+    return ifElse(
+      () => checkAliveNeighbour({ board, cell })(neighbour),
+      append(neighbour),
+      identity,
+    )(acc)
   },
   [],
-  columnsAround(board, cell),
+  columnsAround({ board, cell }),
 )
 
-const getAliveNeighbours = ({ board, cell }) => chain(
-  getAliveNeighboursRow(board, cell),
-  rowsAround(board, cell),
+const getAliveNeighbours = converge(
+  chain,
+  [getAliveNeighboursRow, rowsAround],
 )
 
 const cellShouldLive = (isAlive, aliveNeighboursCount) => {
@@ -50,5 +51,5 @@ const getNextRowValue = (board) => (row, rowIndex) => mapIndexed(
   row,
 )
 
-const getNextValue = (board) => mapIndexed(getNextRowValue(board), board)
+const getNextValue = converge(mapIndexed, [getNextRowValue, identity])
 export default getNextValue
