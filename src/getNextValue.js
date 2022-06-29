@@ -1,6 +1,6 @@
 import {
   compose, reduce, length, chain, map, addIndex, range, filter, and, gt, lte, equals,
-  converge, identity, curry, not, append, ifElse, T, F, always, cond, add,
+  converge, identity, curry, not, append, ifElse, T, F, always, cond, add, useWith, flip,
 } from 'ramda'
 
 const mapIndexed = addIndex(map);
@@ -39,13 +39,13 @@ const cellShouldLive = (isAlive) => cond([
   [T, F],
 ])
 
-const getNextCellValue = (board, r) => (isAlive, c) => cellShouldLive(isAlive)(
+const getNextCellValue = (board) => (r) => (isAlive, c) => cellShouldLive(isAlive)(
   compose(length, getAliveNeighbours)({ board, cell: { r, c } }),
 )
 
-const getNextRowValue = (board) => (row, rowIndex) => mapIndexed(
-  getNextCellValue(board, rowIndex),
-  row,
+const getNextRowValue = (board) => useWith(
+  flip(mapIndexed),
+  [identity, getNextCellValue(board)],
 )
 
 const getNextValue = converge(mapIndexed, [getNextRowValue, identity])
