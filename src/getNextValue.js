@@ -1,6 +1,6 @@
 import {
   compose, reduce, length, chain, map, addIndex, range, filter, and, gt, lte, equals,
-  converge, identity, curry, not, append, ifElse, T, F, always, cond, add, flip, useWith,
+  converge, identity, curry, not, append, ifElse, T, F, always, cond, add,
 } from 'ramda'
 
 const mapIndexed = addIndex(map);
@@ -18,17 +18,17 @@ const checkAliveNeighbour = ({ board, cell }) => converge(
   [compose(not, equals(cell)), checkAlive(board)],
 )
 
-const getAliveNeighboursRow = (bc) => (r) => reduce(
+const getAliveNeighboursRow = ({ board, cell }) => (r) => reduce(
   (acc, c) => {
     const neighbour = { r, c }
     return ifElse(
-      () => checkAliveNeighbour(bc)(neighbour),
+      () => checkAliveNeighbour({ board, cell })(neighbour),
       append(neighbour),
       identity,
     )(acc)
   },
   [],
-  columnsAround(bc),
+  columnsAround({ board, cell }),
 )
 
 const getAliveNeighbours = converge(chain, [getAliveNeighboursRow, rowsAround])
@@ -39,13 +39,13 @@ const cellShouldLive = (isAlive) => cond([
   [T, F],
 ])
 
-const getNextCellValue = (board) => (r) => (isAlive, c) => cellShouldLive(isAlive)(
+const getNextCellValue = (board, r) => (isAlive, c) => cellShouldLive(isAlive)(
   compose(length, getAliveNeighbours)({ board, cell: { r, c } }),
 )
 
-const getNextRowValue = (board) => useWith(
-  flip(mapIndexed),
-  [identity, getNextCellValue(board)],
+const getNextRowValue = (board) => (row, rowIndex) => mapIndexed(
+  getNextCellValue(board, rowIndex),
+  row,
 )
 
 const getNextValue = converge(mapIndexed, [getNextRowValue, identity])
