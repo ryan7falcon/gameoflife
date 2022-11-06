@@ -1,4 +1,4 @@
-import { ALIVE, DEAD } from './consts'
+import { ALIVE, DEAD } from './consts.js'
 
 const getIndexIterator = (len, index) => (
   [index - 1, index, index + 1].filter((v) => (v >= 0 && v < len))
