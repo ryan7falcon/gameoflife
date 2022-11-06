@@ -6,8 +6,8 @@ const getIndexIterator = (len, index) => (
 const rowsAround = (board, cell) => getIndexIterator(board.length, cell.r)
 const columnsAround = (board, cell) => getIndexIterator(board[0].length, cell.c)
 
-const checkNotEqual = (a, b) => ((a.r !== b.r || a.c !== b.c))
-const checkAlive = (board, a) => board[a.r][a.c] === ALIVE
+const applyAndSum = (func, iter) => iter.reduce((agg, v) => agg + func(v), 0)
+const checkNotEqual = (a, rowIdx, colIdx) => ((a.r !== rowIdx || a.c !== colIdx))
 
 const nextCellState = (isAlive, aliveNeighboursCount) => {
   if (aliveNeighboursCount === 2) { return isAlive }
@@ -15,25 +15,19 @@ const nextCellState = (isAlive, aliveNeighboursCount) => {
   return DEAD
 }
 
-const doesNeighbourCount = (board, cellLoc, neighbourLoc) => (
-  (checkNotEqual(cellLoc, neighbourLoc) && checkAlive(board, neighbourLoc)) ? 1 : 0)
+const doesNeighbourCount = (board, cellLoc, rowIdx) => (colIdx) => (
+  (checkNotEqual(cellLoc, rowIdx, colIdx) && board[rowIdx][colIdx] === ALIVE))
 
-const countNeighboursInRow = (board, cellLoc, rowIdx) => columnsAround(board, cellLoc)
-  .reduce((liveNeighboursInRow, colIdx) => (
-    liveNeighboursInRow + doesNeighbourCount(board, cellLoc, { r: rowIdx, c: colIdx })
-  ), 0)
+const countNeighboursInRow = (board, cellLoc) => (rowIdx) => (
+  applyAndSum(doesNeighbourCount(board, cellLoc, rowIdx), columnsAround(board, cellLoc)))
 
-const countNeighbours = (board, cellLoc) => rowsAround(board, cellLoc)
-  .reduce((totalLiveNeighbours, rowIdx) => (
-    totalLiveNeighbours + countNeighboursInRow(board, cellLoc, rowIdx)
-  ), 0)
+const countNeighbours = (board, cellLoc) => (
+  applyAndSum(countNeighboursInRow(board, cellLoc), rowsAround(board, cellLoc)))
 
-const nextRowState = (board, rowIdx) => board[rowIdx]
-  .map((cellState, colIdx) => (
-    nextCellState(cellState, countNeighbours(board, { r: rowIdx, c: colIdx }))
-  ))
+const nextRowState = (board, r) => board[r]
+  .map((cellState, c) => nextCellState(cellState, countNeighbours(board, { r, c })))
 
-const getNextState = (board) => board.map((row, rowIdx) => nextRowState(board, rowIdx))
+const getNextState = (board) => board.map((row, r) => nextRowState(board, r))
 
 export {
   getNextState, nextCellState, nextRowState, countNeighbours,
