@@ -27,7 +27,7 @@ const countNeighbours = (board, cellLoc) => (
 const nextRowState = (board, r) => board[r]
   .map((cellState, c) => nextCellState(cellState, countNeighbours(board, { r, c })))
 
-const getNextState = (board) => board.map((row, r) => nextRowState(board, r))
+const getNextState = (board) => board.map((_, r) => nextRowState(board, r))
 
 export {
   getNextState, nextCellState, nextRowState, countNeighbours,
