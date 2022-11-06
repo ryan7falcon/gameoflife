@@ -1,6 +1,6 @@
 import { compose } from './util.js'
 
-import getNextValue from './getNextValue.js'
+import { getNextValue } from './getNextValue.js'
 import displayBoard from './displayBoard.js'
 
 const step = (i) => compose(

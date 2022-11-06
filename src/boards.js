@@ -1,7 +1,7 @@
 const board1 = [
-  [true, true, true],
-  [true, true, false],
-  [false, false, true],
+  [1, 1, 1],
+  [1, 1, 0],
+  [0, 0, 1],
 ]
 
 export { board1 }
